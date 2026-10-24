@@ -1,0 +1,26 @@
+# Сайт + автоматический HTTPS (Caddy). Запуск:  DOMAIN=maps.example.com docker compose up -d --build
+services:
+  app:
+    build: .
+    restart: unless-stopped
+    environment:
+      - PUBLIC_URL=https://${DOMAIN:?укажите DOMAIN}
+    volumes:
+      - appdata:/data          # аккаунты и карты — не удаляйте этот том
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports: ["80:80", "443:443", "443:443/udp"]
+    environment:
+      - DOMAIN=${DOMAIN}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data       # сертификаты
+      - caddy_config:/config
+    depends_on: [app]
+
+volumes:
+  appdata:
+  caddy_data:
+  caddy_config:
